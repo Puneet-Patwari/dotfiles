@@ -28,10 +28,11 @@
   nix-homebrew = {
     enable = true;
     inherit user;
+    autoMigrate = true;  # keep existing brew packages; take over /opt/homebrew
   };
   homebrew = {
     enable = true;
-    onActivation.cleanup = "zap";  # remove anything not listed here
+    onActivation.cleanup = "none";  # leave existing brew installs alone
     onActivation.autoUpdate = true;
     onActivation.extraFlags = [ "--force" ];
     brews = [

@@ -28,6 +28,11 @@ in
     syntaxHighlighting.enable = true;  # commands turn green when valid
     initContent = ''
       bindkey '^f' autosuggest-accept
+      # Atlassian Corporate Security settings (from /etc/zshrc)
+      HISTSIZE=1048576
+      SAVEHIST=1048576
+      setopt EXTENDED_HISTORY
+      setopt INC_APPEND_HISTORY
     '';
     shellAliases = {
       ".." = "cd ..";
@@ -60,8 +65,10 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/nvim";
   home.file.".config/herdr".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr";
-  home.file.".claude/settings.json".source =
-    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
+  home.file.".claude/settings.json" = {
+    source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
+    force = true;
+  };
 
   # Keep Pi's credential and runtime state local by linking only authored files and directories.
   home.file.".pi/agent/themes".source =
