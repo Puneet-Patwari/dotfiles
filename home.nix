@@ -16,11 +16,34 @@ in
     jq        # json on the command line
     lazygit
     neovim
+    nodejs_22
+    yarn
     # the font everything renders in
     nerd-fonts.hack
   ];
   fonts.fontconfig.enable = true;
-  home.sessionVariables.EDITOR = "nvim";
+  home.sessionVariables = {
+    EDITOR = "nvim";
+    NPM_CONFIG_PREFIX = "${config.home.homeDirectory}/.npm-global";
+  };
+  home.sessionPath = [ "${config.home.homeDirectory}/.npm-global/bin" ];
+
+  # Credentials stay out of this public repo: the wiring is tracked, the values are not.
+  # Each file is mode 0600 and lives outside the repo, so it cannot be committed by
+  # accident. Appended to hm-session-vars.sh, which ~/.zshenv sources for every shell,
+  # so spawned agents inherit these too. set -a exports plain KEY=value lines.
+  # Listed one path per line rather than globbed: zsh errors on an unmatched glob, so a
+  # globbed empty directory would fail on every shell startup. Add a line per new file.
+  home.sessionVariablesExtra = ''
+    for __secret_env in \
+      "$HOME/.config/secrets/no-mistakes-bitbucket.env"; do
+      [ -r "$__secret_env" ] || continue
+      set -a
+      . "$__secret_env"
+      set +a
+    done
+    unset __secret_env
+  '';
 
   programs.zsh = {
     enable = true;
