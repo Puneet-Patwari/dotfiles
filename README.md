@@ -17,7 +17,7 @@ Running the switch builds:
 
 - System settings (dark mode, key repeat, dock, Finder, trackpad)
 - Homebrew apps: WezTerm, OpenSuperWhisper, Codex, Flycut, and DBeaver Community casks, plus the `herdr`, `gh`, `git`, `uv`, and `ffmpeg` CLI tools
-- Nix user packages (ripgrep, fd, fzf, jq, lazygit, Neovim, Hack Nerd Font)
+- Nix user packages (ripgrep, fd, fzf, jq, lazygit, tmux, Neovim, Node.js 22, Yarn, Hack Nerd Font)
 - Shell (zsh, aliases, starship prompt)
 - Editor (Neovim config with the rose-pine moon theme)
 - Terminal (WezTerm config with the rose-pine moon theme and dimmed unfocused windows)
@@ -130,7 +130,9 @@ On a new Mac, set these up by hand after `./bootstrap.sh` finishes:
 - **SSH config**: recreate `~/.ssh/config` with `mkdir -p ~/.ssh && chmod 700 ~/.ssh && install -m 0600 /dev/null ~/.ssh/config`, then add your hosts and restore or generate (`ssh-keygen -t ed25519`) the keys it references.
 - **Codex config**: recreate `~/.codex/config.toml` by hand, then run `codex login`.
 - **Global agent skills**: `npx skills add vercel-labs/agent-skills -g`, `npx skills add vercel-labs/skills -g`, and `npx skills add heygen-com/hyperframes -g`.
-  They install into `~/.agents/skills/` and get linked into `~/.claude/skills/`.
+  They install into `~/.agents/skills/` and get linked or copied into `~/.claude/skills/`.
+  The `no-mistakes` skill is installed by the no-mistakes installer, not by these commands.
+  Personal skills (such as `ig-script`) are restored from their own repositories.
 - **Secrets env file**: `mkdir -p ~/.config/secrets && chmod 700 ~/.config/secrets && install -m 0600 /dev/null ~/.config/secrets/no-mistakes-bitbucket.env`, then add `KEY=value` lines.
   `home.nix` loads `~/.config/secrets/no-mistakes-bitbucket.env` into every shell when it exists.
 - **Python**: `uv python install` provides Python; uv manages it, so this repo declares no Homebrew Python.
