@@ -37,11 +37,17 @@
     onActivation.extraFlags = [ "--force" ];
     brews = [
       "herdr"
+      "gh"
+      "git"
+      "uv"
+      "ffmpeg"
     ];
     casks = [
       "wezterm"
-      "claude-code"
       "opensuperwhisper"
+      "codex"
+      "flycut"
+      "dbeaver-community"
     ];
   };
 }

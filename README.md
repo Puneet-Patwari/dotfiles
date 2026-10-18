@@ -16,11 +16,12 @@ If you find a bug, please open a GitHub Issue using the bug report template.
 Running the switch builds:
 
 - System settings (dark mode, key repeat, dock, Finder, trackpad)
-- Homebrew apps (casks and CLI tools)
-- Nix user packages (ripgrep, fd, fzf, jq, lazygit, Neovim, Hack Nerd Font)
+- Homebrew apps: WezTerm, OpenSuperWhisper, Codex, Flycut, and DBeaver Community casks, plus the `herdr`, `gh`, `git`, `uv`, and `ffmpeg` CLI tools
+- Nix user packages (ripgrep, fd, fzf, jq, lazygit, tmux, Neovim, Node.js 22, Yarn, Hack Nerd Font)
 - Shell (zsh, aliases, starship prompt)
 - Editor (Neovim config with the rose-pine moon theme)
 - Terminal (WezTerm config with the rose-pine moon theme and dimmed unfocused windows)
+- Claude Code, installed with its native installer on the first switch if `~/.local/bin/claude` is missing
 - Agent configs (Claude, Codex, opencode all share one AGENTS.md)
 - Optional Pi theme and local extensions, generic UI settings and model overrides, plus two deliberately pinned third-party Pi packages
 
@@ -35,7 +36,7 @@ Running the switch builds:
 On a brand new Mac, from a bare clone of this repo:
 
 ```sh
-git clone https://github.com/kunchenguid/dotfiles.git
+git clone https://github.com/Puneet-Patwari/dotfiles.git
 cd dotfiles
 ```
 
@@ -85,7 +86,7 @@ No separate build-and-copy step.
 This repo is mine.
 If you clone it, review these before you run `bootstrap.sh`:
 
-- **Username**: run `./bootstrap.sh` (it detects your macOS username and offers to set it) OR change the single `user = "kunchen"` line in `flake.nix`.
+- **Username**: run `./bootstrap.sh` (it detects your macOS username and offers to set it) OR change the single `user = "ppatwari"` line in `flake.nix`.
   Everything else (`configuration.nix`, `home.nix`, home directory paths) is threaded from that one variable.
 - **Host label** `"mac"`, in three places: `flake.nix` (the `darwinConfigurations."mac"` name), `rebuild.sh:5` (the `#mac` at the end of the flake reference), and `bootstrap.sh`'s first-switch command (also `#mac`).
   All three have to match.
@@ -119,6 +120,26 @@ If you don't use it, just remove it from `brews` in your copy.
 - The `cc` and `co` shell aliases in `home.nix` are high-agency shortcuts: `claude --dangerously-skip-permissions` and `codex --full-auto`.
   They're convenient for me, but know what they do before you use them.
 
+## After bootstrap: manual setup
+
+This repo is public, so it deliberately does not track anything that would publish private hosts, trusted paths, or credentials.
+On a new Mac, set these up by hand after `./bootstrap.sh` finishes:
+
+- **Git identity**: `git config --global user.name "Your Name"` and `git config --global user.email you@example.com` (see "Git identity" above).
+- **GitHub CLI auth**: `gh auth login`, then `gh auth setup-git` so plain `git` operations use the same credentials.
+- **SSH config**: recreate `~/.ssh/config` with `mkdir -p ~/.ssh && chmod 700 ~/.ssh && install -m 0600 /dev/null ~/.ssh/config`, then add your hosts and restore or generate (`ssh-keygen -t ed25519`) the keys it references.
+- **Codex config**: recreate `~/.codex/config.toml` by hand, then run `codex login`.
+- **Global agent skills**: `npx skills add vercel-labs/agent-skills -g`, `npx skills add vercel-labs/skills -g`, and `npx skills add heygen-com/hyperframes -g`.
+  They install into `~/.agents/skills/` and get linked or copied into `~/.claude/skills/`.
+  The `no-mistakes` skill is installed by the no-mistakes installer, not by these commands.
+  Personal skills (such as `ig-script`) are restored from their own repositories.
+- **Secrets env file**: `mkdir -p ~/.config/secrets && chmod 700 ~/.config/secrets && install -m 0600 /dev/null ~/.config/secrets/no-mistakes-bitbucket.env`, then add `KEY=value` lines.
+  `home.nix` loads `~/.config/secrets/no-mistakes-bitbucket.env` into every shell when it exists.
+- **Python**: `uv python install` provides Python; uv manages it, so this repo declares no Homebrew Python.
+- **Agent CLI tooling**: the agent tools installed outside Nix and Homebrew (including `no-mistakes`, `treehouse`, `gh-axi`, `chrome-devtools-axi`, and `lavish-axi`) are installed and version-pinned by [firstmate](https://github.com/kunchenguid/firstmate), not declared in this repo.
+  Clone it with `git clone https://github.com/kunchenguid/firstmate.git`, then run `bin/fm-bootstrap.sh install no-mistakes treehouse gh-axi chrome-devtools-axi lavish-axi` from that clone.
+  The guarded Claude startup hooks in `home/.claude/settings.json` stay silent until that step has run.
+
 ## Repo tour
 
 - `flake.nix` - the entry point.
@@ -127,13 +148,17 @@ If you don't use it, just remove it from `brews` in your copy.
 - `home.nix` - user-level config: shell, packages, prompt, and the symlinks described below.
 - `rebuild.sh` - re-applies the config after the first switch.
   Run this every time you make a change.
-- `home/` - the actual config files that get symlinked into place; the sections below explain the shared symlink model and Pi's narrower selective setup.
+- `home/` - the actual config files that get symlinked into place (except `home/.claude/settings.json`, which is a one-time seed); the sections below explain the shared symlink model and Pi's narrower selective setup.
 
 ## How the symlinks work
 
 The files under `home/` are the real files - editing them here is editing your live config, no rebuild needed to see the change in your editor.
 `home.nix` uses `mkOutOfStoreSymlink` to point paths like `~/.config/nvim` straight at `home/.config/nvim` in this repo, so the two never drift out of sync.
 You only run `./rebuild.sh` when you change something that isn't just a symlinked file, like a package list or a system default.
+
+`home/.claude/settings.json` is the exception: it is not symlinked, because Claude Code rewrites that file in place.
+The switch copies it to `~/.claude/settings.json` only when no regular file exists there yet, and never updates it after that.
+Editing either copy does not change the other, and `./rebuild.sh` does not sync them, so copy changes by hand in whichever direction you need.
 
 ## Optional Pi configuration
 
