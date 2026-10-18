@@ -137,7 +137,7 @@ On a new Mac, set these up by hand after `./bootstrap.sh` finishes:
   `home.nix` loads `~/.config/secrets/no-mistakes-bitbucket.env` into every shell when it exists.
 - **Python**: `uv python install` provides Python; uv manages it, so this repo declares no Homebrew Python.
 - **Agent CLI tooling**: the agent tools installed outside Nix and Homebrew (including `no-mistakes`, `treehouse`, `gh-axi`, `chrome-devtools-axi`, and `lavish-axi`) are installed and version-pinned by [firstmate](https://github.com/kunchenguid/firstmate), not declared in this repo.
-  Clone it with `git clone https://github.com/kunchenguid/firstmate.git`, then run `bin/fm-bootstrap.sh install` from that clone.
+  Clone it with `git clone https://github.com/kunchenguid/firstmate.git`, then run `bin/fm-bootstrap.sh install no-mistakes treehouse gh-axi chrome-devtools-axi lavish-axi` from that clone.
   The guarded Claude startup hooks in `home/.claude/settings.json` stay silent until that step has run.
 
 ## Repo tour
