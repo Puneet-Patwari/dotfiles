@@ -16,7 +16,7 @@ If you find a bug, please open a GitHub Issue using the bug report template.
 Running the switch builds:
 
 - System settings (dark mode, key repeat, dock, Finder, trackpad)
-- Homebrew apps (casks and CLI tools)
+- Homebrew apps: WezTerm, OpenSuperWhisper, Codex, Flycut, and DBeaver Community casks, plus the `herdr`, `gh`, `git`, `uv`, and `ffmpeg` CLI tools
 - Nix user packages (ripgrep, fd, fzf, jq, lazygit, Neovim, Hack Nerd Font)
 - Shell (zsh, aliases, starship prompt)
 - Editor (Neovim config with the rose-pine moon theme)
@@ -35,7 +35,7 @@ Running the switch builds:
 On a brand new Mac, from a bare clone of this repo:
 
 ```sh
-git clone https://github.com/kunchenguid/dotfiles.git
+git clone https://github.com/Puneet-Patwari/dotfiles.git
 cd dotfiles
 ```
 
@@ -85,7 +85,7 @@ No separate build-and-copy step.
 This repo is mine.
 If you clone it, review these before you run `bootstrap.sh`:
 
-- **Username**: run `./bootstrap.sh` (it detects your macOS username and offers to set it) OR change the single `user = "kunchen"` line in `flake.nix`.
+- **Username**: run `./bootstrap.sh` (it detects your macOS username and offers to set it) OR change the single `user = "ppatwari"` line in `flake.nix`.
   Everything else (`configuration.nix`, `home.nix`, home directory paths) is threaded from that one variable.
 - **Host label** `"mac"`, in three places: `flake.nix` (the `darwinConfigurations."mac"` name), `rebuild.sh:5` (the `#mac` at the end of the flake reference), and `bootstrap.sh`'s first-switch command (also `#mac`).
   All three have to match.
@@ -118,6 +118,18 @@ If you don't use it, just remove it from `brews` in your copy.
   If you clone this repo, you'd silently inherit my agent instructions - edit or delete `home/AGENTS.md` if you don't want that.
 - The `cc` and `co` shell aliases in `home.nix` are high-agency shortcuts: `claude --dangerously-skip-permissions` and `codex --full-auto`.
   They're convenient for me, but know what they do before you use them.
+
+## After bootstrap: manual setup
+
+This repo deliberately does not track the following. On a new Mac, set these up by hand after `./bootstrap.sh` finishes:
+
+- **Git identity**: see "Git identity" above.
+- **GitHub CLI auth**: `gh auth login`, then `gh auth setup-git` so plain `git` operations use the same credentials.
+- **SSH config**: `~/.ssh/config` (and any keys it references).
+- **Codex config**: `~/.codex/config.toml`.
+- **Global agent skills**: whatever skills directory your agent CLIs read from outside this repo.
+- **Secrets env file**: `home.nix` reads `~/.config/secrets/no-mistakes-bitbucket.env` if it exists; create it there with `KEY=value` lines for anything that file is meant to hold.
+- **Agent CLI tooling**: the agent tools installed outside Nix/Homebrew (including `no-mistakes` and `treehouse`) are installed and version-pinned by my own `bin/fm-bootstrap.sh install` script, not declared in this repo.
 
 ## Repo tour
 

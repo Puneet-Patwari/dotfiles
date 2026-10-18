@@ -15,6 +15,7 @@ in
     fzf       # fuzzy finder
     jq        # json on the command line
     lazygit
+    tmux      # terminal multiplexer
     neovim
     nodejs_22
     yarn
@@ -26,7 +27,10 @@ in
     EDITOR = "nvim";
     NPM_CONFIG_PREFIX = "${config.home.homeDirectory}/.npm-global";
   };
-  home.sessionPath = [ "${config.home.homeDirectory}/.npm-global/bin" ];
+  home.sessionPath = [
+    "${config.home.homeDirectory}/.npm-global/bin"
+    "${config.home.homeDirectory}/.local/bin"
+  ];
 
   # Credentials stay out of this public repo: the wiring is tracked, the values are not.
   # Each file is mode 0600 and lives outside the repo, so it cannot be committed by
@@ -88,10 +92,31 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/nvim";
   home.file.".config/herdr".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr";
-  home.file.".claude/settings.json" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
-    force = true;
-  };
+  # ~/.claude/settings.json is NOT a home.file symlink: Claude Code and company
+  # tooling rewrite this file in place, which replaces any symlink with a
+  # regular file. A forced symlink would make the next switch overwrite that
+  # live file with this repo's stale copy and silently drop machine-local
+  # state. Instead, seed a real, private copy only when nothing live exists
+  # yet (or the target is still a leftover symlink from the old setup);
+  # never touch an existing regular file.
+  home.activation.installClaudeSettings = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+    claudeSettingsTarget="$HOME/.claude/settings.json"
+    if [ ! -e "$claudeSettingsTarget" ] || [ -L "$claudeSettingsTarget" ]; then
+      $DRY_RUN_CMD mkdir -p "$HOME/.claude"
+      $DRY_RUN_CMD rm -f "$claudeSettingsTarget"
+      $DRY_RUN_CMD install -m 0600 "${dotfiles}/home/.claude/settings.json" "$claudeSettingsTarget"
+    fi
+  '';
+
+  # Claude Code: install the native binary if it isn't already present.
+  # Never fails the switch; a failed install just leaves the cask-free gap
+  # for the user to resolve by hand.
+  home.activation.installClaudeCode = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+    if [ ! -x "$HOME/.local/bin/claude" ]; then
+      $DRY_RUN_CMD sh -c 'curl -fsSL https://claude.ai/install.sh | bash' \
+        || $VERBOSE_ECHO "warning: Claude Code native install failed; install it yourself from https://claude.ai/install.sh"
+    fi
+  '';
 
   # Keep Pi's credential and runtime state local by linking only authored files and directories.
   home.file.".pi/agent/themes".source =

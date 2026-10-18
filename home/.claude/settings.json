@@ -1,32 +1,10 @@
 {
   "hooks": {
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "/Users/ppatwari/.claude/hooks/aloc-managed/post_to_aloc.sh",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "/Users/ppatwari/.claude/hooks/aloc-managed/post_to_aloc.sh",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
     "SessionStart": [
       {
         "hooks": [
           {
-            "command": "gh-axi",
+            "command": "command -v gh-axi >/dev/null 2>&1 || exit 0; gh-axi",
             "timeout": 10,
             "type": "command"
           }
@@ -36,7 +14,7 @@
       {
         "hooks": [
           {
-            "command": "chrome-devtools-axi",
+            "command": "command -v chrome-devtools-axi >/dev/null 2>&1 || exit 0; chrome-devtools-axi",
             "timeout": 10,
             "type": "command"
           }
@@ -46,7 +24,7 @@
       {
         "hooks": [
           {
-            "command": "lavish-axi",
+            "command": "command -v lavish-axi >/dev/null 2>&1 || exit 0; lavish-axi",
             "timeout": 10,
             "type": "command"
           }
@@ -54,6 +32,27 @@
         "matcher": ""
       }
     ]
+  },
+  "model": "opus[1m]",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
+  "permissions": {
+    "defaultMode": "auto"
+  },
+  "skillOverrides": {
+    "find-skills": "off",
+    "vercel-composition-patterns": "off",
+    "vercel-optimize": "off",
+    "vercel-react-best-practices": "off",
+    "vercel-react-native-skills": "off",
+    "vercel-react-view-transitions": "off",
+    "web-design-guidelines": "off",
+    "writing-guidelines": "off",
+    "deploy-to-vercel": "off",
+    "vercel-cli-with-tokens": "off"
   },
   "skipDangerousModePermissionPrompt": true,
   "statusLine": {
