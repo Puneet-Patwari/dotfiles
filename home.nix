@@ -109,12 +109,14 @@ in
   '';
 
   # Claude Code: install the native binary if it isn't already present.
-  # Never fails the switch; a failed install just leaves the cask-free gap
-  # for the user to resolve by hand.
+  # Activation runs with a minimal Nix-only PATH, so the installer gets the
+  # macOS system tools appended. Never fails the switch; a failed install
+  # prints a warning and leaves Claude Code for the user to install by hand.
   home.activation.installClaudeCode = config.lib.dag.entryAfter [ "writeBoundary" ] ''
     if [ ! -x "$HOME/.local/bin/claude" ]; then
-      $DRY_RUN_CMD sh -c 'curl -fsSL https://claude.ai/install.sh | bash' \
-        || $VERBOSE_ECHO "warning: Claude Code native install failed; install it yourself from https://claude.ai/install.sh"
+      run /usr/bin/env PATH="$PATH:/usr/bin:/bin:/usr/sbin:/sbin" \
+        bash -o pipefail -c 'curl -fsSL https://claude.ai/install.sh | bash' \
+        || warnEcho "Claude Code native install failed; install it yourself with: curl -fsSL https://claude.ai/install.sh | bash"
     fi
   '';
 

@@ -21,6 +21,7 @@ Running the switch builds:
 - Shell (zsh, aliases, starship prompt)
 - Editor (Neovim config with the rose-pine moon theme)
 - Terminal (WezTerm config with the rose-pine moon theme and dimmed unfocused windows)
+- Claude Code, installed with its native installer on the first switch if `~/.local/bin/claude` is missing
 - Agent configs (Claude, Codex, opencode all share one AGENTS.md)
 - Optional Pi theme and local extensions, generic UI settings and model overrides, plus two deliberately pinned third-party Pi packages
 
@@ -121,15 +122,21 @@ If you don't use it, just remove it from `brews` in your copy.
 
 ## After bootstrap: manual setup
 
-This repo deliberately does not track the following. On a new Mac, set these up by hand after `./bootstrap.sh` finishes:
+This repo is public, so it deliberately does not track anything that would publish private hosts, trusted paths, or credentials.
+On a new Mac, set these up by hand after `./bootstrap.sh` finishes:
 
-- **Git identity**: see "Git identity" above.
+- **Git identity**: `git config --global user.name "Your Name"` and `git config --global user.email you@example.com` (see "Git identity" above).
 - **GitHub CLI auth**: `gh auth login`, then `gh auth setup-git` so plain `git` operations use the same credentials.
-- **SSH config**: `~/.ssh/config` (and any keys it references).
-- **Codex config**: `~/.codex/config.toml`.
-- **Global agent skills**: whatever skills directory your agent CLIs read from outside this repo.
-- **Secrets env file**: `home.nix` reads `~/.config/secrets/no-mistakes-bitbucket.env` if it exists; create it there with `KEY=value` lines for anything that file is meant to hold.
-- **Agent CLI tooling**: the agent tools installed outside Nix/Homebrew (including `no-mistakes` and `treehouse`) are installed and version-pinned by my own `bin/fm-bootstrap.sh install` script, not declared in this repo.
+- **SSH config**: recreate `~/.ssh/config` with `mkdir -p ~/.ssh && chmod 700 ~/.ssh && install -m 0600 /dev/null ~/.ssh/config`, then add your hosts and restore or generate (`ssh-keygen -t ed25519`) the keys it references.
+- **Codex config**: recreate `~/.codex/config.toml` by hand, then run `codex login`.
+- **Global agent skills**: `npx skills add vercel-labs/agent-skills -g`, `npx skills add vercel-labs/skills -g`, and `npx skills add heygen-com/hyperframes -g`.
+  They install into `~/.agents/skills/` and get linked into `~/.claude/skills/`.
+- **Secrets env file**: `mkdir -p ~/.config/secrets && chmod 700 ~/.config/secrets && install -m 0600 /dev/null ~/.config/secrets/no-mistakes-bitbucket.env`, then add `KEY=value` lines.
+  `home.nix` loads `~/.config/secrets/no-mistakes-bitbucket.env` into every shell when it exists.
+- **Python**: `uv python install` provides Python; uv manages it, so this repo declares no Homebrew Python.
+- **Agent CLI tooling**: the agent tools installed outside Nix and Homebrew (including `no-mistakes`, `treehouse`, `gh-axi`, `chrome-devtools-axi`, and `lavish-axi`) are installed and version-pinned by [firstmate](https://github.com/kunchenguid/firstmate), not declared in this repo.
+  Clone it with `git clone https://github.com/kunchenguid/firstmate.git`, then run `bin/fm-bootstrap.sh install` from that clone.
+  The guarded Claude startup hooks in `home/.claude/settings.json` stay silent until that step has run.
 
 ## Repo tour
 
@@ -139,13 +146,17 @@ This repo deliberately does not track the following. On a new Mac, set these up 
 - `home.nix` - user-level config: shell, packages, prompt, and the symlinks described below.
 - `rebuild.sh` - re-applies the config after the first switch.
   Run this every time you make a change.
-- `home/` - the actual config files that get symlinked into place; the sections below explain the shared symlink model and Pi's narrower selective setup.
+- `home/` - the actual config files that get symlinked into place (except `home/.claude/settings.json`, which is a one-time seed); the sections below explain the shared symlink model and Pi's narrower selective setup.
 
 ## How the symlinks work
 
 The files under `home/` are the real files - editing them here is editing your live config, no rebuild needed to see the change in your editor.
 `home.nix` uses `mkOutOfStoreSymlink` to point paths like `~/.config/nvim` straight at `home/.config/nvim` in this repo, so the two never drift out of sync.
 You only run `./rebuild.sh` when you change something that isn't just a symlinked file, like a package list or a system default.
+
+`home/.claude/settings.json` is the exception: it is not symlinked, because Claude Code rewrites that file in place.
+The switch copies it to `~/.claude/settings.json` only when no regular file exists there yet, and never updates it after that.
+Editing either copy does not change the other, and `./rebuild.sh` does not sync them, so copy changes by hand in whichever direction you need.
 
 ## Optional Pi configuration
 
